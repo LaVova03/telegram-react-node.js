@@ -10,6 +10,11 @@ const bot = new TelegramBot(token, { polling: true });
 app.use(cors());
 app.use(bodyParser.json());
 
+// Обработчик GET запросов для главной страницы
+app.get('/', (req, res) => {
+    res.send('Server is running');
+});
+
 // Обработчик POST запросов из веб-приложения
 app.post('/webhook', (req, res) => {
     const data = req.body;
