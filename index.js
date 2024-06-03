@@ -8,12 +8,13 @@ bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
 
-    if (text === '/start') {
+    console.log('Received message:', msg);
 
+    if (text === '/start') {
         await bot.sendMessage(chatId, 'Заполнить форму', {
             reply_markup: {
-                keyboard: [
-                    [{ text: 'Сделать заказ', web_app: { url: '/form' } }]
+                inline_keyboard: [
+                    [{ text: 'Заполнить форму', web_app: { url: site + 'form' } }]
                 ]
             }
         });
@@ -26,6 +27,20 @@ bot.on('message', async (msg) => {
             }
         });
     } else {
-        bot.sendMessage(chatId, 'Received your message');
+        await bot.sendMessage(chatId, 'Received your message');
+    }
+
+    if (msg.web_app_data && msg.web_app_data.data) {
+        console.log('Received web app data:', msg.web_app_data.data);
+        try {
+            const data = JSON.parse(msg.web_app_data.data);
+            console.log('Parsed data:', data);
+
+            await bot.sendMessage(chatId, 'Data send successful');
+            await bot.sendMessage(chatId, `Country: ${data.country}`);
+            await bot.sendMessage(chatId, `Street: ${data.street}`);
+        } catch (e) {
+            console.error('Error parsing web app data:', e);
+        }
     }
 });
