@@ -52,7 +52,7 @@ bot.on('message', (msg) => {
         bot.sendMessage(chatId, 'Заполнить форму', {
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: 'Заполнить форму', url: `${site}form` }]
+                    [{ text: 'Заполнить форму', web_app: { url: `${site}form` } }]
                 ]
             }
         });
@@ -60,7 +60,7 @@ bot.on('message', (msg) => {
         bot.sendMessage(chatId, 'Заходи в наш интернет магазин', {
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: 'Сделать заказ', url: site }]
+                    [{ text: 'Сделать заказ', web_app: { url: site } }]
                 ]
             }
         });
