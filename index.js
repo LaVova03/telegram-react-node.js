@@ -95,9 +95,9 @@ app.post('/web-data', async (req, res) => {
 });
 
 // Vercel предоставляет порт автоматически, так что вам не нужно явно указывать его
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+// const PORT = process.env.PORT || 8000;
+// app.listen(PORT, () => {
+//     console.log(`Server is running on port ${PORT}`);
+// });
 
 module.exports = app;
