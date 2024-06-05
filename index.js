@@ -74,26 +74,22 @@ app.post('/web-data', async (req, res) => {
     console.log('Received web-data:', req.body);
 
     try {
-        await bot.answerWebAppQuery(queryId.toString(), {
+        await bot.answerWebAppQuery(queryId, {
             type: 'article',
-            id: queryId.toString(),
+            id: queryId,
             title: 'Успешная покупка',
-            input_message_content: { message_text: 'Поздравляю с покупкой. Сумма: ' + totalPrice }
+            input_message_content: { message_text: 'Поздравляю с покупкой' + totalPrice }
         });
         console.log('Answer sent successfully');
         return res.status(200).json({});
     } catch (error) {
         console.error('Error answering web app query:', error);
-        try {
-            await bot.answerWebAppQuery(queryId.toString(), {
-                type: 'article',
-                id: queryId.toString(),
-                title: 'Не удалось приобрести товар',
-                input_message_content: { message_text: 'Не удалось приобрести товар' }
-            });
-        } catch (error2) {
-            console.error('Error sending failure message:', error2);
-        }
+        await bot.answerWebAppQuery(queryId, {
+            type: 'article',
+            id: queryId,
+            title: 'Не удалось приобрести товар',
+            input_message_content: { message_text: 'Не удалось приобрести товар' }
+        });
         return res.status(500).json({});
     }
 });
