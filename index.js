@@ -10,9 +10,10 @@ const bot = new TelegramBot(token, { polling: true });
 app.use(cors());
 app.use(bodyParser.json());
 
+const site = 'https://main--storebot.netlify.app/'; // Убедитесь, что у вас определена переменная site
+
 // Обработчик GET запросов для главной страницы
 app.get('/', (req, res) => {
-    console.log('GET request received at /');
     res.send('Server is running');
 });
 
@@ -21,18 +22,23 @@ app.post('/webhook', (req, res) => {
     const data = req.body;
     console.log('Received data from web app:', data);
 
-    // Отправляем данные обратно в чат с помощью бота
-    bot.sendMessage(data.chatId, 'Received your data from web app:')
-        .then(() => bot.sendMessage(data.chatId, `Country: ${data.country}`))
-        .then(() => bot.sendMessage(data.chatId, `Street: ${data.street}`))
-        .then(() => {
-            console.log('Messages sent successfully');
-            res.sendStatus(200);
-        })
-        .catch(err => {
-            console.error('Error sending message:', err);
-            res.sendStatus(500);
-        });
+    try {
+        // Отправляем данные обратно в чат с помощью бота
+        bot.sendMessage(data.chatId, 'Received your data from web app:')
+            .then(() => bot.sendMessage(data.chatId, `Country: ${data.country}`))
+            .then(() => bot.sendMessage(data.chatId, `Street: ${data.street}`))
+            .then(() => {
+                console.log('Messages sent successfully');
+                res.sendStatus(200);
+            })
+            .catch(error => {
+                console.error('Error sending messages:', error);
+                res.sendStatus(500);
+            });
+    } catch (error) {
+        console.error('Unexpected error:', error);
+        res.sendStatus(500);
+    }
 });
 
 // Обработчик сообщений в чате Telegram
@@ -46,32 +52,20 @@ bot.on('message', (msg) => {
         bot.sendMessage(chatId, 'Заполнить форму', {
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: 'Заполнить форму', url: 'https://telegram-react-node-js.vercel.app/form' }]
+                    [{ text: 'Заполнить форму', url: `${site}form` }]
                 ]
             }
-        }).then(() => {
-            console.log('Sent form link to user');
-        }).catch(err => {
-            console.error('Error sending form link:', err);
         });
 
         bot.sendMessage(chatId, 'Заходи в наш интернет магазин', {
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: 'Сделать заказ', url: 'https://telegram-react-node-js.vercel.app' }]
+                    [{ text: 'Сделать заказ', url: site }]
                 ]
             }
-        }).then(() => {
-            console.log('Sent shop link to user');
-        }).catch(err => {
-            console.error('Error sending shop link:', err);
         });
     } else {
-        bot.sendMessage(chatId, 'Received your message').then(() => {
-            console.log('Acknowledged user message');
-        }).catch(err => {
-            console.error('Error acknowledging message:', err);
-        });
+        bot.sendMessage(chatId, 'Received your message');
     }
 });
 
@@ -84,12 +78,12 @@ app.post('/web-data', async (req, res) => {
             type: 'article',
             id: queryId,
             title: 'Успешная покупка',
-            input_message_content: { message_text: 'Поздравляю с покупкой ' + totalPrice }
+            input_message_content: { message_text: 'Поздравляю с покупкой' + totalPrice }
         });
-        console.log('Purchase confirmation sent');
+        console.log('Answer sent successfully');
         return res.status(200).json({});
     } catch (error) {
-        console.error('Error sending purchase confirmation:', error);
+        console.error('Error answering web app query:', error);
         await bot.answerWebAppQuery(queryId, {
             type: 'article',
             id: queryId,
@@ -101,4 +95,9 @@ app.post('/web-data', async (req, res) => {
 });
 
 // Vercel предоставляет порт автоматически, так что вам не нужно явно указывать его
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
+
 module.exports = app;
