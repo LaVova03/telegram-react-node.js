@@ -10,20 +10,22 @@ const bot = new TelegramBot(token, { polling: true });
 app.use(cors());
 app.use(bodyParser.json());
 
-const site = 'https://main--storebot.netlify.app/'; // Убедитесь, что у вас определена переменная site
+const site = 'https://main--storebot.netlify.app/';
 
-// Обработчик GET запросов для главной страницы
 app.get('/', (req, res) => {
     res.send('Server is running');
 });
 
-// Обработчик POST запросов из веб-приложения
 app.post('/webhook', (req, res) => {
     const data = req.body;
     console.log('Received data from web app:', data);
 
+    if (!data.chatId || !data.country || !data.street) {
+        console.error('Missing required fields in the request body');
+        return res.status(400).send('Missing required fields');
+    }
+
     try {
-        // Отправляем данные обратно в чат с помощью бота
         bot.sendMessage(data.chatId, 'Received your data from web app:')
             .then(() => bot.sendMessage(data.chatId, `Country: ${data.country}`))
             .then(() => bot.sendMessage(data.chatId, `Street: ${data.street}`))
@@ -41,7 +43,6 @@ app.post('/webhook', (req, res) => {
     }
 });
 
-// Обработчик сообщений в чате Telegram
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
@@ -73,31 +74,39 @@ app.post('/web-data', async (req, res) => {
     const { queryId, products, totalPrice } = req.body;
     console.log('Received web-data:', req.body);
 
+    if (!queryId || !products || !totalPrice) {
+        console.error('Missing required fields in the request body');
+        return res.status(400).send('Missing required fields');
+    }
+
     try {
-        await bot.answerWebAppQuery(queryId, {
+        await bot.answerWebAppQuery(queryId.toString(), {
             type: 'article',
-            id: queryId,
+            id: queryId.toString(),
             title: 'Успешная покупка',
-            input_message_content: { message_text: 'Поздравляю с покупкой' + totalPrice }
+            input_message_content: { message_text: 'Поздравляю с покупкой. Сумма: ' + totalPrice }
         });
         console.log('Answer sent successfully');
         return res.status(200).json({});
     } catch (error) {
         console.error('Error answering web app query:', error);
-        await bot.answerWebAppQuery(queryId, {
-            type: 'article',
-            id: queryId,
-            title: 'Не удалось приобрести товар',
-            input_message_content: { message_text: 'Не удалось приобрести товар' }
-        });
+        try {
+            await bot.answerWebAppQuery(queryId.toString(), {
+                type: 'article',
+                id: queryId.toString(),
+                title: 'Не удалось приобрести товар',
+                input_message_content: { message_text: 'Не удалось приобрести товар' }
+            });
+        } catch (error2) {
+            console.error('Error sending failure message:', error2);
+        }
         return res.status(500).json({});
     }
 });
 
-// Vercel предоставляет порт автоматически, так что вам не нужно явно указывать его
-// const PORT = process.env.PORT || 8000;
-// app.listen(PORT, () => {
-//     console.log(`Server is running on port ${PORT}`);
-// });
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
 module.exports = app;
