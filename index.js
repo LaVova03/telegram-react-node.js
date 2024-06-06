@@ -26,7 +26,7 @@ app.post('/webhook', (req, res) => {
     }
 
     try {
-        bot.sendMessage(data.chatId, 'Received your data from web app:')
+        bot.sendMessage(data.chatId, 'Ваши геоданные:')
             .then(() => bot.sendMessage(data.chatId, `Country: ${data.country}`))
             .then(() => bot.sendMessage(data.chatId, `Street: ${data.street}`))
             .then(() => {
