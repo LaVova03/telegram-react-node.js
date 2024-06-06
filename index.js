@@ -26,7 +26,7 @@ app.post('/webhook', (req, res) => {
     }
 
     try {
-        bot.sendMessage(data.chatId, 'Ваши геоданные:')
+        bot.sendMessage(data.chatId, 'Your location:')
             .then(() => bot.sendMessage(data.chatId, `Country: ${data.country}`))
             .then(() => bot.sendMessage(data.chatId, `Street: ${data.street}`))
             .then(() => {
@@ -65,7 +65,7 @@ bot.on('message', (msg) => {
                 ]
             }
         });
-    } else {
+    } else if (!text.includes('Поздравляю с покупкой')) {
         bot.sendMessage(chatId, 'Received your message');
     }
 });
